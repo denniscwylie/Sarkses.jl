@@ -1948,11 +1948,11 @@ function predictSarks(sarks::Sarks,
         k = k
     )
     posScoreMat = Matrix{Float32}(c1idx(
-        unstack(posScores, :id, :bin, :score),
+        unstack(posScores, :id, :bin, :score, fill=mean(posScores.score)),
         collect(keys(seqs))
     )[:, 2:end])
     posGiniMat = Matrix{Float32}(c1idx(
-        unstack(posScores, :id, :bin, :gini),
+        unstack(posScores, :id, :bin, :gini, fill=mean(posScores.gini)),
         collect(keys(seqs))
     )[:, 2:end])
     return (posScoreMat, posGiniMat)
