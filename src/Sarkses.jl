@@ -1979,7 +1979,7 @@ function predictSarks(sarks::Sarks,
         )[:, 2:end])
         posGiniMat = Matrix{Float32}(c1idx(
             padAndUnstack(posScores, :id, :bin, :gini,
-                          fill=mean(sarks.windGini)),
+                          fill=Float64(mean(sarks.windGini))),
             collect(keys(seqs))
         )[:, 2:end])
         return (posScoreMat, posGiniMat)
