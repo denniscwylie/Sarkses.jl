@@ -375,6 +375,7 @@ function padAndUnstack(stacked::DataFrame,
                        colkey::Union{Integer,Symbol}=:bin,
                        value::Union{Integer,Symbol}=:score;
                        side::Symbol=:left,
+                       fill::Union{Nothing,Float64}=nothing,
                        n::Union{Nothing,Int64}=nothing
                        )::DataFrame
     if n == nothing
@@ -402,7 +403,11 @@ function padAndUnstack(stacked::DataFrame,
             if side != :left
                 toAdd.c .+= maxBin
             end
-            vVal = mean(stacked[rmatch, value])
+            vVal = if fill == nothing
+                mean(stacked[rmatch, value])
+            else
+                fill
+            end
             toAdd[:, :v] = [vVal for i in 1:size(toAdd, 1)]
             rename!(toAdd, [names(toAdd)[i] =>
                             Symbol(names(stacked)[i]) for i in 1:3])
@@ -1934,28 +1939,51 @@ end
 
 function sarksPositionalScoreMat(this::Sarks,
                                  seqs::OrderedDict{<:AbstractString,<:AbstractString};
-                                 k::Int64=25)::Matrix
+                                 k::Int64=25,
+                                 fill::Symbol=:individual
+                                 )::Matrix
     out = sarksPositionalScore(this, seqs, k=k)
-    return Matrix(c1idx(padAndUnstack(out), collect(keys(seqs)))[:, 2:end])
+    if fill == :individual
+        return Matrix(c1idx(padAndUnstack(out), collect(keys(seqs)))[:, 2:end])
+    else
+        return Matrix(c1idx(padAndUnstack(out, fill=mean(sarks.scores)),
+                            collect(keys(seqs)))[:, 2:end])
+    end
 end
 
 function predictSarks(sarks::Sarks,
                       seqs::OrderedDict{<:AbstractString,<:AbstractString};
-                      k::Int64=25)::Tuple{Matrix{Float32},Matrix{Float32}}
+                      k::Int64=25,
+                      fill::Symbol=:individual
+                      )::Tuple{Matrix{Float32},Matrix{Float32}}
     posScores = sarksPositionalScore(
         sarks,
         OrderedDict([id => Array{UInt8}(seqs[id]*"\$") for id in keys(seqs)]),
         k = k
     )
-    posScoreMat = Matrix{Float32}(c1idx(
-        padAndUnstack(posScores),
-        collect(keys(seqs))
-    )[:, 2:end])
-    posGiniMat = Matrix{Float32}(c1idx(
-        padAndUnstack(posScores),
-        collect(keys(seqs))
-    )[:, 2:end])
-    return (posScoreMat, posGiniMat)
+    if fill == :individual
+        posScoreMat = Matrix{Float32}(c1idx(
+            padAndUnstack(posScores),
+            collect(keys(seqs))
+        )[:, 2:end])
+        posGiniMat = Matrix{Float32}(c1idx(
+            padAndUnstack(posScores, :id, :bin, :gini),
+            collect(keys(seqs))
+        )[:, 2:end])
+        return (posScoreMat, posGiniMat)
+    else
+        posScoreMat = Matrix{Float32}(c1idx(
+            padAndUnstack(posScores,
+                          fill=mean(sarks.scores)),
+            collect(keys(seqs))
+        )[:, 2:end])
+        posGiniMat = Matrix{Float32}(c1idx(
+            padAndUnstack(posScores, :id, :bin, :gini,
+                          fill=mean(sarks.windGini)),
+            collect(keys(seqs))
+        )[:, 2:end])
+        return (posScoreMat, posGiniMat)
+   end
 end
 
 
