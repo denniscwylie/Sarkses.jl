@@ -1946,7 +1946,7 @@ function sarksPositionalScoreMat(this::Sarks,
     if fill == :individual
         return Matrix(c1idx(padAndUnstack(out), collect(keys(seqs)))[:, 2:end])
     else
-        return Matrix(c1idx(padAndUnstack(out, fill=mean(sarks.scores)),
+        return Matrix(c1idx(padAndUnstack(out, fill=mean(this.scores)),
                             collect(keys(seqs)))[:, 2:end])
     end
 end
