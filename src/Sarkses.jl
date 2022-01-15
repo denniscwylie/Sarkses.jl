@@ -417,6 +417,7 @@ function padAndUnstack(stacked::DataFrame,
     if length(toAdds) > 0
         stacked = vcat(stacked, vcat(toAdds...))
     end
+    stacked = stacked[sortperm(stacked[:, colkey]), :] ## added
     return unstack(stacked, rowkeys, colkey, value)
 end
 
