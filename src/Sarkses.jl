@@ -371,7 +371,7 @@ function c1idx(od::OrderedDict, idx::Array)::OrderedDict
 end
 
 function padAndUnstack(stacked::DataFrame,
-                       rowkeys::Union{Integer,Symbol}=:id,
+                       rowkey::Union{Integer,Symbol}=:id,
                        colkey::Union{Integer,Symbol}=:bin,
                        value::Union{Integer,Symbol}=:score;
                        side::Symbol=:left,
@@ -382,8 +382,8 @@ function padAndUnstack(stacked::DataFrame,
         n = maximum(stacked[:, colkey])
     end
     stacked = deepcopy(stacked)
-    stacked = stacked[:, [rowkeys, colkey, value]]
-    uniqueIds = unique(stacked[:, rowkeys])
+    stacked = stacked[:, [rowkey, colkey, value]]
+    uniqueIds = unique(stacked[:, rowkey])
     toAdds = Array{DataFrame}(undef, 0)
     idToInds = Dict{String,Array{Int64}}()
     for id in uniqueIds
@@ -417,8 +417,8 @@ function padAndUnstack(stacked::DataFrame,
     if length(toAdds) > 0
         stacked = vcat(stacked, vcat(toAdds...))
     end
-    stacked = stacked[sortperm(stacked[:, colkey]), :] ## added
-    return unstack(stacked, rowkeys, colkey, value)
+    stacked = stacked[sortperm(stacked[:, colkey]), :]
+    return unstack(stacked, rowkey, colkey, value)
 end
 
 function readFasta(filename::String)::OrderedDict{String,String}
