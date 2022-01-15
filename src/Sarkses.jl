@@ -1941,7 +1941,7 @@ end
 function sarksPositionalScoreMat(this::Sarks,
                                  seqs::OrderedDict{<:AbstractString,<:AbstractString};
                                  k::Int64=25,
-                                 fill::Symbol=:individual
+                                 fill::Symbol=:global
                                  )::Matrix
     out = sarksPositionalScore(this, seqs, k=k)
     if fill == :individual
@@ -1955,7 +1955,7 @@ end
 function predictSarks(sarks::Sarks,
                       seqs::OrderedDict{<:AbstractString,<:AbstractString};
                       k::Int64=25,
-                      fill::Symbol=:individual
+                      fill::Symbol=:global
                       )::Tuple{Matrix{Float32},Matrix{Float32}}
     posScores = sarksPositionalScore(
         sarks,
