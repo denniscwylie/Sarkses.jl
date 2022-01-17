@@ -1941,13 +1941,17 @@ end
 function sarksPositionalScoreMat(this::Sarks,
                                  seqs::OrderedDict{<:AbstractString,<:AbstractString};
                                  k::Int64=25,
+                                 side::Symbol=:left,
                                  fill::Symbol=:global
                                  )::Matrix
     out = sarksPositionalScore(this, seqs, k=k)
     if fill == :individual
-        return Matrix(c1idx(padAndUnstack(out), collect(keys(seqs)))[:, 2:end])
+        return Matrix(c1idx(padAndUnstack(out, side=side),
+                            collect(keys(seqs)))[:, 2:end])
     else
-        return Matrix(c1idx(padAndUnstack(out, fill=mean(this.scores)),
+        return Matrix(c1idx(padAndUnstack(out,
+                                          side = side,
+                                          fill = mean(this.scores)),
                             collect(keys(seqs)))[:, 2:end])
     end
 end
@@ -1955,6 +1959,7 @@ end
 function predictSarks(sarks::Sarks,
                       seqs::OrderedDict{<:AbstractString,<:AbstractString};
                       k::Int64=25,
+                      side::Symbol=:left,
                       fill::Symbol=:global
                       )::Tuple{Matrix{Float32},Matrix{Float32}}
     posScores = sarksPositionalScore(
@@ -1964,23 +1969,25 @@ function predictSarks(sarks::Sarks,
     )
     if fill == :individual
         posScoreMat = Matrix{Float32}(c1idx(
-            padAndUnstack(posScores),
+            padAndUnstack(posScores, side=side),
             collect(keys(seqs))
         )[:, 2:end])
         posGiniMat = Matrix{Float32}(c1idx(
-            padAndUnstack(posScores, :id, :bin, :gini),
+            padAndUnstack(posScores, :id, :bin, :gini, side=side),
             collect(keys(seqs))
         )[:, 2:end])
         return (posScoreMat, posGiniMat)
     else
         posScoreMat = Matrix{Float32}(c1idx(
             padAndUnstack(posScores,
-                          fill=mean(sarks.scores)),
+                          side = side,
+                          fill = mean(sarks.scores)),
             collect(keys(seqs))
         )[:, 2:end])
         posGiniMat = Matrix{Float32}(c1idx(
             padAndUnstack(posScores, :id, :bin, :gini,
-                          fill=Float64(mean(sarks.windGini))),
+                          side = side,
+                          fill = Float64(mean(sarks.windGini))),
             collect(keys(seqs))
         )[:, 2:end])
         return (posScoreMat, posGiniMat)
