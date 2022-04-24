@@ -797,6 +797,7 @@ function kmerPeaks(this::AbSarks,
         theta=Array{Float64}(undef,0), spatialLength=Array{Int64}(undef,0),
         minSpatialGini=Array{Float64}(undef,0), spatialTheta=Array{Float64}(undef,0)
     )
+    hasCatScores = :catScores in fieldnames(typeof(this))
     for f = 1:length(iFilt)
         filt = filters[f]
         hw = convert(Int64, filt["halfWindow"])
@@ -817,7 +818,7 @@ function kmerPeaks(this::AbSarks,
             wi = s - this.bounds[blockIndex] + 1
             gini = this.windGini[i]
             sg = (length(this.spatGini) > 0 ? this.spatGini[i] : -Inf32)
-            score = this.catScores[i]
+            score = (hasCatScores ? this.catScores[i] : this.scores[blockIndex])
             sw = (length(this.spatialWindowed) > 0 ?
                   this.spatialWindowed[i] : -Inf32)
             append!(out, Dict(
